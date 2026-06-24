@@ -23,6 +23,24 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Cargo Delivery API',
+    version: '1.0.0',
+    health: '/api/health',
+    endpoints: {
+      auth: '/api/auth',
+      shipments: '/api/shipments',
+      tracking: '/api/tracking',
+      drivers: '/api/drivers',
+      vehicles: '/api/vehicles',
+      reports: '/api/reports',
+      chat: '/api/chat',
+    },
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Cargo Delivery API is running' });
 });
