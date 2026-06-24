@@ -16,9 +16,39 @@ connectDB();
 
 const app = express();
 
-const corsOptions = process.env.FRONTEND_URL
-  ? { origin: process.env.FRONTEND_URL, credentials: true }
-  : {};
+const parseAllowedOrigins = () => {
+  const values = [process.env.FRONTEND_URL, process.env.FRONTEND_URLS]
+    .filter(Boolean)
+    .flatMap((entry) => entry.split(','))
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return [...new Set(values)];
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    if (/^https:\/\/([\w-]+\.)*vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    if (/^https:\/\/([\w-]+\.)*onrender\.com$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+};
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

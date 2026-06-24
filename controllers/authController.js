@@ -2,10 +2,21 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const generateToken = (id) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET is not configured');
+  }
+
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
+
+const formatUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
 
 exports.register = async (req, res, next) => {
   try {
@@ -28,7 +39,7 @@ exports.register = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Registration successful',
-      data: { user, token },
+      data: { user: formatUser(user), token },
     });
   } catch (error) {
     next(error);
@@ -50,12 +61,7 @@ exports.login = async (req, res, next) => {
       success: true,
       message: 'Login successful',
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: formatUser(user),
         token,
       },
     });
